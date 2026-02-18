@@ -1,13 +1,15 @@
-async function predictURL() {
+async function predict() {
 
-    const url = document.getElementById("url").value;
+    const input = document.getElementById("features").value;
 
-    if (!url) {
-        alert("Please enter a URL");
+    const features = input.split(",").map(Number);
+
+    if (features.length !== 30) {
+        alert("You must enter exactly 30 features");
         return;
     }
 
-    const response = await fetch("https://phishing-detector-r5ff.onrender.com/predict-url", {
+    const response = await fetch("https://phishing-detector-r5ff.onrender.com/predict", {
 
         method: "POST",
 
@@ -16,7 +18,7 @@ async function predictURL() {
         },
 
         body: JSON.stringify({
-            url: url
+            features: features
         })
 
     });
@@ -26,6 +28,6 @@ async function predictURL() {
     document.getElementById("result").innerHTML =
         `
         <h3>Prediction: ${result.prediction}</h3>
-        <h3>Probability: ${result.probability.toFixed(4)}</h3>
+        <h3>Probability: ${result.probability.toFixed(6)}</h3>
         `;
 }

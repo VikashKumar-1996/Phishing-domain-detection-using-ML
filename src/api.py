@@ -7,8 +7,6 @@ import pandas as pd
 from pathlib import Path
 from pydantic import BaseModel, conlist
 
-from src.feature_extractor import extract_features
-
 
 # -----------------------------
 # Load model and threshold
@@ -24,19 +22,14 @@ threshold = joblib.load(THRESHOLD_PATH)
 
 
 # -----------------------------
-# Create FastAPI app
+# FastAPI app
 # -----------------------------
 
 app = FastAPI(
     title="Phishing Detection API",
-    description="Detect phishing websites using LightGBM",
-    version="1.0"
+    description="Predict phishing using 30 engineered features",
+    version="2.0"
 )
-
-
-# -----------------------------
-# Enable CORS
-# -----------------------------
 
 app.add_middleware(
     CORSMiddleware,
@@ -48,17 +41,12 @@ app.add_middleware(
 
 
 # -----------------------------
-# Schemas
+# Input schema
 # -----------------------------
 
 class PhishingFeatures(BaseModel):
 
     features: conlist(int, min_length=30, max_length=30)
-
-
-class URLInput(BaseModel):
-
-    url: str
 
 
 # -----------------------------
@@ -74,7 +62,7 @@ def home():
 
 
 # -----------------------------
-# Feature-based prediction
+# Prediction endpoint
 # -----------------------------
 
 @app.post("/predict")
@@ -89,31 +77,6 @@ def predict(data: PhishingFeatures):
     result = "phishing" if prediction == 1 else "legitimate"
 
     return {
-        "prediction": result,
-        "probability": float(probability),
-        "threshold": float(threshold)
-    }
-
-
-# -----------------------------
-# URL-based prediction
-# -----------------------------
-
-@app.post("/predict-url")
-def predict_url(data: URLInput):
-
-    features = extract_features(data.url)
-
-    X = pd.DataFrame([features])
-
-    probability = model.predict_proba(X)[0][1]
-
-    prediction = int(probability >= threshold)
-
-    result = "phishing" if prediction == 1 else "legitimate"
-
-    return {
-        "url": data.url,
         "prediction": result,
         "probability": float(probability),
         "threshold": float(threshold)
