@@ -7,7 +7,7 @@ async function predictURL() {
         return;
     }
 
-    const response = await fetch("http://127.0.0.1:8000/predict-url", {
+    const response = await fetch("https://phishing-detector-r5ff.onrender.com/predict-url", {
 
         method: "POST",
 
